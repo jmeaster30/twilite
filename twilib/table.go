@@ -4,8 +4,6 @@ import (
 	"database/sql/driver"
 	"reflect"
 
-	"github.com/jmeaster30/twilite/twiutil"
-
 	"github.com/mattn/go-sqlite3"
 )
 
@@ -16,7 +14,7 @@ type Table struct {
 	goType                reflect.Type
 }
 
-func NewTable(structType reflect.Type) twiutil.Result[Table] {
+func NewTable(structType reflect.Type) Result[Table] {
 	columns := map[string]ColumnData{}
 	columnOrder := []string{}
 
@@ -24,13 +22,13 @@ func NewTable(structType reflect.Type) twiutil.Result[Table] {
 		structField := structType.Field(i)
 		columnDataResult := NewColumnData(structField, uint(i))
 		if columnDataResult.IsError() {
-			return twiutil.Error[Table](columnDataResult.Error())
+			return Error[Table](columnDataResult.Error())
 		}
 		columns[structField.Name] = columnDataResult.Value()
 		columnOrder = append(columnOrder, structField.Name)
 	}
 
-	return twiutil.Ok(Table{
+	return Ok(Table{
 		name:                  structType.Name(),
 		fieldNameToColumnData: columns,
 		fieldNameOrdering:     columnOrder,
@@ -38,7 +36,7 @@ func NewTable(structType reflect.Type) twiutil.Result[Table] {
 	})
 }
 
-func (table Table) BuildTable(conn *sqlite3.SQLiteConn) twiutil.Result[driver.Stmt] {
+func (table Table) BuildTable(conn *sqlite3.SQLiteConn) Result[driver.Stmt] {
 	query := "CREATE TABLE IF NOT EXISTS " + table.name + " ("
 	for columnIndex := 0; columnIndex < len(table.fieldNameOrdering); columnIndex++ {
 		columnData := table.fieldNameToColumnData[table.fieldNameOrdering[columnIndex]]
@@ -48,19 +46,19 @@ func (table Table) BuildTable(conn *sqlite3.SQLiteConn) twiutil.Result[driver.St
 		}
 	}
 	query += ");"
-	return twiutil.ToResult(conn.Prepare(query))
+	return ToResult(conn.Prepare(query))
 }
 
-func (table *Table) ToGoType(row []driver.Value) twiutil.Result[reflect.Value] {
+func (table *Table) ToGoType(row []driver.Value) Result[reflect.Value] {
 	result := reflect.New(table.goType)
 	for fieldIndex := 0; fieldIndex < table.goType.NumField(); fieldIndex++ {
 		field := table.goType.Field(fieldIndex)
 		columnData := table.fieldNameToColumnData[field.Name]
 		columnValue := columnData.ToGoType(row[columnData.GetColumnIndex()])
 		if columnValue.IsError() {
-			return twiutil.Error[reflect.Value](columnValue.Error())
+			return Error[reflect.Value](columnValue.Error())
 		}
 		result.FieldByName(field.Name).Set(columnValue.Value())
 	}
-	return twiutil.Ok(result)
+	return Ok(result)
 }

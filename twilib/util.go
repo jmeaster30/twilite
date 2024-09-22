@@ -1,4 +1,4 @@
-package twiutil
+package twilib
 
 import "fmt"
 
