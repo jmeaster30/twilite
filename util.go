@@ -2,8 +2,6 @@ package twilite
 
 import "fmt"
 
-type twiUnit struct{}
-
 type twiResult[T any] struct {
 	data *T
 	err  error
