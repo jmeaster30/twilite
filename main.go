@@ -8,14 +8,14 @@ import (
 
 type DbContext struct {
 	databaseFile               string
-	tables                     []twilib.Table
+	tables                     map[string]twilib.Table
 	createIdColumnIfNotPresent bool
 }
 
 func NewDbContext(databaseFile string) DbContext {
 	return DbContext{
 		databaseFile:               databaseFile,
-		tables:                     []twilib.Table{},
+		tables:                     map[string]twilib.Table{},
 		createIdColumnIfNotPresent: false,
 	}
 }
@@ -28,11 +28,24 @@ func (context *DbContext) InitializeTables() error {
 	return nil
 }
 
-func (context *DbContext) RegisterTable(structType reflect.Type) error {
+func RegisterTable[T any](context *DbContext) error {
+	var zero [0]T
+	structType := reflect.TypeOf(zero).Elem()
+
 	tableResult := twilib.NewTable(structType)
 	if tableResult.IsError() {
 		return tableResult.Error()
 	}
-	context.tables = append(context.tables, tableResult.Value())
+	context.tables[structType.Name()] = tableResult.Value()
 	return nil
+}
+
+func SelectQuery[T any](context *DbContext) QueryBuilder[T] {
+	var zero [0]T
+	structType := reflect.TypeOf(zero).Elem()
+
+	return SelectQueryBuilder[T]{
+		context: context,
+		table:   context.tables[structType.Name()], // TODO: Add error for tables that don't exist
+	}
 }
