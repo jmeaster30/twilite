@@ -4,7 +4,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"reflect"
-	"twilite/twiutil"
+
+	"github.com/jmeaster30/twilite/twiutil"
 )
 
 func getColumnType(goType reflect.Type) twiutil.Result[string] {

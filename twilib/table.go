@@ -3,7 +3,8 @@ package twilib
 import (
 	"database/sql/driver"
 	"reflect"
-	"twilite/twiutil"
+
+	"github.com/jmeaster30/twilite/twiutil"
 
 	"github.com/mattn/go-sqlite3"
 )
