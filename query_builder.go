@@ -2,7 +2,8 @@ package twilite
 
 import (
 	"database/sql/driver"
-	"twilite/twilib"
+
+	"github.com/jmeaster30/twilite/twilib"
 )
 
 type QueryBuilder[T any] interface {

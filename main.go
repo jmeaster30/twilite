@@ -3,7 +3,7 @@ package twilite
 import (
 	"reflect"
 
-	"twilite/twilib"
+	"github.com/jmeaster30/twilite/twilib"
 )
 
 type DbContext struct {
