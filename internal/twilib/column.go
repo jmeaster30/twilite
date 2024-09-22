@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/jmeaster30/twilite/twiutil"
+	"github.com/jmeaster30/twilite/internal/twiutil"
 )
 
 func getColumnType(goType reflect.Type) twiutil.Result[string] {

@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"reflect"
 
-	"github.com/jmeaster30/twilite/twiutil"
+	"github.com/jmeaster30/twilite/internal/twiutil"
 
 	"github.com/mattn/go-sqlite3"
 )
