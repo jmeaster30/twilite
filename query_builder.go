@@ -2,8 +2,6 @@ package twilite
 
 import (
 	"database/sql/driver"
-
-	"github.com/jmeaster30/twilite/twilib"
 )
 
 type QueryBuilder[T any] interface {
@@ -12,7 +10,7 @@ type QueryBuilder[T any] interface {
 
 type SelectQueryBuilder[T any] struct {
 	context *DbContext
-	table   twilib.Table
+	table   twiTable
 }
 
 func (s SelectQueryBuilder[T]) Build() (driver.Stmt, error) {

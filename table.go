@@ -1,4 +1,4 @@
-package twilib
+package twilite
 
 import (
 	"database/sql/driver"
@@ -7,28 +7,28 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-type Table struct {
+type twiTable struct {
 	name                  string
-	fieldNameToColumnData map[string]ColumnData
+	fieldNameToColumnData map[string]twiColumnData
 	fieldNameOrdering     []string
 	goType                reflect.Type
 }
 
-func NewTable(structType reflect.Type) Result[Table] {
-	columns := map[string]ColumnData{}
+func NewTable(structType reflect.Type) twiResult[twiTable] {
+	columns := map[string]twiColumnData{}
 	columnOrder := []string{}
 
 	for i := 0; i < structType.NumField(); i++ {
 		structField := structType.Field(i)
 		columnDataResult := NewColumnData(structField, uint(i))
 		if columnDataResult.IsError() {
-			return Error[Table](columnDataResult.Error())
+			return Error[twiTable](columnDataResult.Error())
 		}
 		columns[structField.Name] = columnDataResult.Value()
 		columnOrder = append(columnOrder, structField.Name)
 	}
 
-	return Ok(Table{
+	return Ok(twiTable{
 		name:                  structType.Name(),
 		fieldNameToColumnData: columns,
 		fieldNameOrdering:     columnOrder,
@@ -36,7 +36,7 @@ func NewTable(structType reflect.Type) Result[Table] {
 	})
 }
 
-func (table Table) BuildTable(conn *sqlite3.SQLiteConn) Result[driver.Stmt] {
+func (table twiTable) BuildTable(conn *sqlite3.SQLiteConn) twiResult[driver.Stmt] {
 	query := "CREATE TABLE IF NOT EXISTS " + table.name + " ("
 	for columnIndex := 0; columnIndex < len(table.fieldNameOrdering); columnIndex++ {
 		columnData := table.fieldNameToColumnData[table.fieldNameOrdering[columnIndex]]
@@ -49,7 +49,7 @@ func (table Table) BuildTable(conn *sqlite3.SQLiteConn) Result[driver.Stmt] {
 	return ToResult(conn.Prepare(query))
 }
 
-func (table *Table) ToGoType(row []driver.Value) Result[reflect.Value] {
+func (table *twiTable) ToGoType(row []driver.Value) twiResult[reflect.Value] {
 	result := reflect.New(table.goType)
 	for fieldIndex := 0; fieldIndex < table.goType.NumField(); fieldIndex++ {
 		field := table.goType.Field(fieldIndex)

@@ -1,4 +1,4 @@
-package twilib
+package twilite
 
 import (
 	"database/sql/driver"
@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-func getColumnType(goType reflect.Type) Result[string] {
+func getColumnType(goType reflect.Type) twiResult[string] {
 	switch goType.Kind() {
 	case reflect.Bool:
 		return Ok("NUMERIC")
@@ -22,7 +22,7 @@ func getColumnType(goType reflect.Type) Result[string] {
 	}
 }
 
-type ColumnData struct {
+type twiColumnData struct {
 	name        string
 	columnType  string
 	columnIndex uint
@@ -34,14 +34,14 @@ type ColumnData struct {
 	// TODO foreign key
 }
 
-func NewColumnData(structField reflect.StructField, index uint) Result[ColumnData] {
+func NewColumnData(structField reflect.StructField, index uint) twiResult[twiColumnData] {
 	return OnOk(getColumnType(structField.Type).OnError(
-		func(err error) Result[string] {
+		func(err error) twiResult[string] {
 			value, ok := structField.Tag.Lookup("twiColumnType")
 			return ErrorOnMissing(value, ok, fmt.Errorf("missing valid column type for field '%s'", structField.Name))
 		}),
-		func(columnType string) Result[ColumnData] {
-			return Ok(ColumnData{
+		func(columnType string) twiResult[twiColumnData] {
+			return Ok(twiColumnData{
 				name:        structField.Name,
 				columnType:  columnType,
 				columnIndex: index,
@@ -50,14 +50,14 @@ func NewColumnData(structField reflect.StructField, index uint) Result[ColumnDat
 		})
 }
 
-func (columnData ColumnData) GetColumnIndex() uint {
+func (columnData twiColumnData) GetColumnIndex() uint {
 	return columnData.columnIndex
 }
 
-func (columnData ColumnData) GetColumnDefinition() string {
+func (columnData twiColumnData) GetColumnDefinition() string {
 	return fmt.Sprintf("%s %s", columnData.name, columnData.columnType)
 }
 
-func (columnData ColumnData) ToGoType(value driver.Value) Result[reflect.Value] {
+func (columnData twiColumnData) ToGoType(value driver.Value) twiResult[reflect.Value] {
 	return Ok(reflect.ValueOf(value)) // TODO need to add nested struct types
 }

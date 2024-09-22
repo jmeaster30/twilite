@@ -2,20 +2,18 @@ package twilite
 
 import (
 	"reflect"
-
-	"github.com/jmeaster30/twilite/twilib"
 )
 
 type DbContext struct {
 	databaseFile               string
-	tables                     map[string]twilib.Table
+	tables                     map[string]twiTable
 	createIdColumnIfNotPresent bool
 }
 
 func NewDbContext(databaseFile string) DbContext {
 	return DbContext{
 		databaseFile:               databaseFile,
-		tables:                     map[string]twilib.Table{},
+		tables:                     map[string]twiTable{},
 		createIdColumnIfNotPresent: false,
 	}
 }
@@ -32,7 +30,7 @@ func RegisterTable[T any](context *DbContext) error {
 	var zero [0]T
 	structType := reflect.TypeOf(zero).Elem()
 
-	tableResult := twilib.NewTable(structType)
+	tableResult := NewTable(structType)
 	if tableResult.IsError() {
 		return tableResult.Error()
 	}
